@@ -1,0 +1,42 @@
+# First, default to what Git thinks s good...
+* text=auto
+
+#----------------------------------
+# Binary files with attributes...
+#----------------------------------
+# Matlab binary types
+*.mat    -merge binary
+*.p      -merge binary
+*.slx    -merge binary
+*.mdl    -merge binary
+*.mexa64 -merge binary
+*.mexw32 -merge binary
+*.mexw64 -merge binary
+
+# This one is kind of iffy,
+# (because it could be an Xfig file,
+#  but I don't use Xfig much right
+#  now, so I'll keep this binary for
+#  the time being...)
+*.fig -merge binary
+
+# Other binary types...
+*.jpg -merge binary
+*.png -merge binary
+
+#----------------------------------
+# Text files with attributes...
+#----------------------------------
+# Matlab Scripts/Functions:
+*.m    text eol=lf
+
+# TeX files
+*.tex  text eol=lf
+
+# Shell scripts:
+*.sh   text eol=lf
+
+# Org files:
+*.org  text eol=lf
+
+

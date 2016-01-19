@@ -1,0 +1,581 @@
+#+TITLE: aepound's Emacs Configuration
+#+OPTIONS: toc:4 h:4
+
+
+* Configuration
+
+** Inspiration
+
+I took a bit from a lot of different places to be able to make 
+this file work for me.  The major sources of inspiration were 
+(to name only a few):
+
+> Sacha Chua's emacs config
+> The emacs starter kit
+> Charles Cave's Org-mode for GTD setup
+> and my own mentor, Todd Moon's .emacs file
+
+** How it works
+
+I utilize Quelpa to load my packages from the repositories that 
+I use.  I at first had difficulties on the Windows platform, but
+finally nuked my emacs install and used the cygwin port to be able to 
+have the full Emacs abilities.  I generally followed the steps in the 
+quelpa readme, along with setting my environment variable '$HOME' with
+the correct value.
+
+*** Contents of my init.el file
+Basically, I wanted to make sure that I always had an up-to-date version
+of both Quelpa and Org-mode.  Because of some of the issues that I've read about 
+updating Org-mode from the ELPA repo, I decided to use the source: orgmode.org.
+
+I'll have to see if this produces any issues, but for now, everything has been 
+working just fine.
+#+BEGIN_SRC emacs-lisp :tangle init.el
+
+;; initialize the package system
+(package-initialize)
+;; Disable GNU ELPA
+;(setq package-archives nil)
+(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
+
+(package-initialize)
+;; Bootstrap install Quelpa
+(if (require 'quelpa nil t)
+    (quelpa-self-upgrade)
+  (with-temp-buffer
+    (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/bootstrap.el")
+    (eval-buffer)))
+
+;; install use-package and the quelpa handler
+(quelpa '(quelpa-use-package :fetcher github :repo "quelpa/quelpa-use-package"))
+(require 'quelpa-use-package)
+
+;; install org-mode plus all the contrib stuff...
+(quelpa 'org-plus-contrib)	
+;(require 'org-plus-contrib)
+(require 'org)
+
+(org-babel-load-file "~/.emacs.d/aepound.org")
+#+END_SRC
+
+
+
+*** First things first 
+Some very common things and pet peeves that I need to get out of the way... 
+#+BEGIN_SRC emacs-lisp
+
+#+END_SRC
+
+** Personal information
+   Because this may be different, depending on what I'm doing, I've setup a different  
+identity.org file for each place that I use this config.  
+
+#+BEGIN_SRC emacs-lisp
+(setq user-full-name "Andrew Pound"
+      user-mail-address "aepound@gmail.com")
+#+END_SRC
+
+ 
+*** TODO I may need to look at different ways to do this
+
+** General configuration
+
+*** Default Directory
+
+
+#+BEGIN_SRC emacs-lisp
+;; set up a default directory to work in:
+(setq default-directory (expand-file-name user-emacs-directory))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(setq my-personal-directory (expand-file-name "personal/" user-emacs-directory))
+#+END_SRC
+
+*** Backups
+
+#+BEGIN_SRC emacs-lisp
+(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+;(setq backup-inhibited t)                  ;; No backup files
+#+END_SRC
+
+*** TODO History
+
+From http://www.wisdomandwonder.com/wordpress/wp-content/uploads/2014/03/C3F.html
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq savehist-file "~/.emacs.d/savehist")
+(savehist-mode 1)
+(setq history-length t)
+(setq history-delete-duplicates t)
+(setq savehist-save-minibuffer-history 1)
+(setq savehist-additional-variables
+      '(kill-ring
+        search-ring
+        regexp-search-ring))
+#+END_SRC
+
+*** Window config
+
+When you're starting out, tooltips, menus, and the tool bar can be very
+helpful. [[http://sachachua.com/blog/2014/03/emacs-basics-using-mouse/][(Emacs Basics: Using the Mouse]]). Eventually, you may want to 
+reclaim that extra little bit of screenspace. The following code turns
+those things off when using a graphical Emacs. (Although I changed my
+mind about the menu - I want that again.)  
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(when window-system
+  (tooltip-mode -1)
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1))
+#+END_SRC
+
+**** Look and Feel
+
+#+BEGIN_SRC emacs-lisp
+(load-theme 'tango-dark)                   ;; Set color theme
+; line numbers 
+(global-linum-mode)                        ;; Enable line numbers
+(setq frame-title-format "emacs - %b")     ;; Set frame title to "emacs - <buffer name>"
+(setq linum-format "%3d")                  ;; Right-aligned line numbers with width 3
+
+; line wrapping
+(setq-default truncate-lines t)            ;; Truncate lines by default
+(setq-default fill-column 80)              ;; Wrap things up at the 80th column
+
+; Status line
+(setq display-time-day-and-date t)         ;; Dispaly date along with time in status bar
+(display-time)                             ;; Display date and time in status bar
+(size-indication-mode t)                   ;; show file size
+(column-number-mode t)                     ;; Enable column numbers in mode line
+
+; Fringe on the left
+(fringe-mode '(nil . 0))                   ;; Left fringes only
+
+; No beeping!
+(setq visible-bell t)                      ;; Disable system beep
+
+; Cursor
+(setq x-stretch-cursor t)                  ;; Cursor as wide as the glyph under it
+(blink-cursor-mode 0)                      ;; Don't blink cursor
+(show-paren-mode)                          ;; Show matching parenthesis
+
+; Selection feedback
+(setq transient-mark-mode t)               ;; Enable visual feedbakck on selections
+
+; Use unix line endings by default
+(setq default-buffer-file-coding-system 
+      'utf-8-unix)                         ;; Unix line endings
+(setq require-final-newline t)             ;; Always end a file with a newline
+#+END_SRC
+
+
+*** Column Markers
+#+BEGIN_SRC emacs-lisp
+;; Enable column markers at column 81 to warn of long lines
+;; (source: http://www.emacswiki.org/emacs/download/column-marker.el)
+(quelpa 'column-marker)
+(require 'column-marker)
+(defun marker-at-81 () (interactive) (column-marker-1 81))
+(add-hook 'matlab-mode-hook 'marker-at-81)
+(add-hook 'org-mode-hook 'marker-at-81)
+(add-hook 'c-mode-hook 'marker-at-81)
+(add-hook 'c++-mode-hook 'marker-at-81)
+(add-hook 'LaTeX-mode-hook 'marker-at-81)
+(setq matlab-comment-column 50)
+(setq-default fill-column 81)
+(setq-default auto-fill-function 'do-auto-fill)
+;(add-hook 'text-mode-hook 'turn-on-auto-fill)
+
+#+END_SRC
+
+*** Windows specific config
+
+#+BEGIN_SRC emacs-lisp :tangle no
+;; Figure out and use the proxy settings from IE:
+;(add-to-list 'load-path "C:/Users/apound/emacs")
+(eval-after-load "url"
+  '(progn
+     (require 'w32-registry)
+     (defadvice url-retrieve (before
+                              w32-set-proxy-dynamically
+                              activate)
+       "Before retrieving a URL, query the IE Proxy settings, and use them."
+       (let ((proxy (w32reg-get-ie-proxy-config)))
+         (setq url-using-proxy proxy
+               url-proxy-services proxy)))))
+#+END_SRC
+
+*** Autoinsert
+#+BEGIN_SRC emacs-lisp
+(load "autoinsert")
+(setq auto-insert-directory "~/.emacs.d/personal/")
+(setq auto-insert-alist '(("\\.tex$" . "tex-insert.tex")
+                ("\\.ltx$" . "ltx-insert.ltx")
+                ("\\.c$" . "c-insert.c")
+                ("\\.h$" . "h-insert.c")
+                ("[Mm]akefile" . "makefile.inc")
+                ("\\.bib$" . "tex-insert.tex")
+                ("\\.C$" . "cc-insert.c")
+                ("\\.cc$" . "cc-insert.c")
+                ("\\.cpp$" . "cc-insert.c")
+                ("\\.html$" . "html-insert.html")
+))
+(auto-insert-mode)
+#+END_SRC
+* Emacs Package configurations
+** Matlab config
+
+#+BEGIN_SRC emacs-lisp
+(quelpa 'matlab-mode) 
+(add-to-list 'load-path "~/.emacs.d/quelpa/build/matlab-mode")
+(load-library "matlab-load")
+#+END_SRC
+
+
+** AucTeX
+I couldn't get quelpa to install this from the ELPA repo, and I couldn't get a
+custom recipe to work reliably with the build process that auctex required. So,
+I'm just installing this using the regular way
+
+*** TODO Look into el-get? for this...
+#+BEGIN_SRC emacs-lisp
+;(quelpa 'auctex)
+;(unless (package-installed-p 'auctex)
+;    (package-install 'auctex))
+(use-package tex-site
+  :ensure auctex)
+#+END_SRC
+
+*** LaTeX config
+#+BEGIN_SRC emacs-lisp
+(setq
+  TeX-auto-save t
+  TeX-parse-self t
+  TeX-source-correlate-method (quote synctex)
+  TeX-source-correlate-mode t
+  TeX-source-correlate-start-server t
+  reftex-plug-into-AUCTeX t)
+
+(setq-default TeX-master t)
+(add-hook 'LaTeX-mode-hook 'visual-line-mode)
+(add-hook 'LaTeX-mode-hook 'flyspell-mode)
+(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+(add-hook 'LaTeX-mode-hook 'TeX-PDF-mode)
+(add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+#+END_SRC   
+
+**** TODO PDF viewing
+This needs to be modified for Windows vs Unix processing
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq
+  TeX-view-program-list (quote (("Sumatra PDF" "C:/Users/apound/emacs/sumatra/SumatraPDF.exe -reuse-instance %o")))
+  TeX-view-program-selection (quote ((output-pdf "Sumatra PDF"))))
+#+END_SRC
+
+**** TODO LaTeX Hook
+This needs to be re-worked to allow for yap on Windows with MikTeX, dviout with
+TeXlive on Windows or Default (? xdvi) on unix....
+
+***** TODO How do we tell which TeX is installed?
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(defun LaTeX-insert-mtitem ()
+  "Insert a new mtitem."
+  (interactive "*")
+  (let ((environment (LaTeX-current-environment)))
+   (newline)
+   (TeX-insert-macro "mtitem")
+    (LaTeX-indent-line)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq LaTeX-mode-hook
+   '(lambda()
+      (tex-pdf-mode)
+      (setq LaTeX-default-environment "equation")
+      (local-set-key "\M-j" 'LaTeX-fill-paragraph )
+      (local-set-key "\M-q" 'query-replace)
+      (local-set-key "\M-g" 'goto-line)
+      (local-set-key "\e-j" 'LaTeX-fill-paragraph )
+      (local-set-key "\e-q" 'query-replace)
+      (local-set-key "\e-g" 'goto-line)
+      (load "matrix.el")
+      (local-set-key "\C-c[" 'bmatrix)
+      (local-set-key "\C-c(" 'pmatrix)
+      (local-set-key "\C-cm" 'matrix)
+      (local-set-key "\C-cv" 'vmatrix)
+      (local-set-key "\C-cV" 'Vmatrix)
+      (local-set-key "\C-cL" 'seteqlabel)  
+      (local-set-key "\C-cr" 'refeq)
+      (local-set-key "\C-cs" 'smallmatrix)
+      (local-set-key "\C-c\\" 'tabstop)
+      (local-set-key "\C-c\C-a"   'eqalign)
+      (local-set-key "\C-ct"  'LaTeX-insertmtitem)
+      (local-set-key "\C-c\C-u"   'delbf)
+      (local-set-key "\C-c\C-b"   'addbf)
+      (local-set-key "\C-c8"   'addbar)
+      (local-set-key "\C-c7"   'delbar)
+      (local-set-key "\C-ch"   'slideH) ; slide "heading"
+      (local-set-key "\C-cH"   'slideH) ; slide "heading"
+      (LaTeX-math-mode)
+      (setq abbrev-mode "t")
+;      (load "markindex1")
+;      (local-set-key "\C-ci" index-key-map)
+;      (setq TeX-command-list (cons (list "latex2pdf1" "latex2pdf1 '%t'" 'Tex-run-LaTeX nil t) TeX-command-list))
+      ; Replaced yap with xdvi for this next section: (aepound)
+      (setq TeX-view-style
+      '(("^a4\\(?:dutch\\|paper\\|wide\\)\\|sem-a4$" "%(o?)yap %dS -paper a4 %d")
+      ("^a5\\(?:comb\\|paper\\)$" "%(o?)yap %dS -paper a5 %d")
+      ("^b5paper$" "%(o?)yap %dS -paper b5 %d")
+      ("^letterpaper$" "%(o?)yap %dS -paper us %d")
+      ("^legalpaper$" "%(o?)yap %dS -paper legal %d")
+      ("^executivepaper$" "%(o?)yap %dS -paper 7.25x10.5in %d")
+      ("^landscape$" "%(o?)yap %dS -paper a4r -s 0 %d")
+      ("." "%(o?)yap %dS %d")))
+
+;  '("^" (regexp-opt '("a4paper" "a4dutch" "a4wide" "sem-a4")) "$")
+;     "%(o?)xdvi %dS -paper a4 %d")
+;    (,(concat "^" (regexp-opt '("a5paper" "a5comb")) "$")
+;     "%(o?)yap %dS -paper a5 %d")
+;   ("^b5paper$" "%(o?)yap %dS -paper b5 %d")
+;    ("^letterpaper$" "%(o?)yap %dS -paper us %d")
+;    ("^legalpaper$" "%(o?)yap %dS -paper legal %d")
+;    ("^executivepaper$" "%(o?)yap %dS -paper 7.25x10.5in %d")
+;    ("^landscape$" "%(o?)yap %dS -paper a4r -s 0 %d")
+;    ("." "%(o?)xdvi %dS %d")
+;  :group 'TeX-command
+;  :type '(repeat (group regexp (string :tag "Command"))))
+    )
+)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(require 'tex-site)
+;(setq LaTeX-command-style '(("" "%(PDF)%(latex) -file-line-error %S%(PDFout)")))
+#+END_SRC
+
+
+**** BibTeX Config
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq bibtex-text-indentation 8)
+(setq bibtex-ontline-indentation 10)
+#+END_SRC
+
+
+     
+** Org-mode
+
+First, let's make sure that =Org-mode= is the default for org files, org-archive
+files and for general text files:
+#+BEGIN_SRC emacs-lisp 
+(add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
+#+END_SRC
+And let's add this config file to my ageda list, because there are many things
+that I need to fix in this...
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'org-agenda-files (expand-file-name "aepound.org" user-emacs-directory))
+#+END_SRC
+
+*** Global Key Bindings
+And let's set up some global key bindings to help with saving links, viewing the
+agenda, etc...
+
+#+BEGIN_SRC emacs-lisp 
+;; Standard key bindings
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-ca" 'org-agenda)
+;(global-set-key "\C-cb" 'org-iswitchb)
+(global-set-key "\C-cc" 'org-capture)
+#+END_SRC
+
+#+RESULTS:
+: org-capture
+
+*** Config settings
+
+#+BEGIN_SRC emacs-lisp
+(setq org-hide-leading-stars t)  ;; hide but one star in outline
+(setq org-add-levels-only t)     ;; align items nicely
+;
+#+END_SRC
+
+**** Timing
+
+#+BEGIN_SRC emacs-lisp
+;(setq org-clock-persist t)       ;; Keep track of time ....
+;(org-clock-persistance-insinuate);; .... across sessions
+(setq org-clock-out-remove-zero-time-clocks t);;remove 0-duration clocked
+#+END_SRC
+
+**** TODO Look up the org-iswitchb
+
+*** Organization of my life, etc...
+
+| Filename         | Description                                        |
+|------------------+----------------------------------------------------|
+| someday.org      | The Someday/Maybe file                             |
+| todo.org         | Main listing of current projects/tasks             |
+| dates.org        | A listing/calendar of Bdays, anniversary, etc      |
+| todo.org_archive | Archived tasks                                     |
+| journal.org      | Journal/writings                                   |
+| notes.org        | Everything I want to remember for some other time. |
+
+#+BEGIN_SRC emacs-lisp
+; This sets my-org-dir as "~/org/" (because user-emacs-directory = "~/.emacs.d/")
+(setq my-org-dir (expand-file-name "../org/" user-emacs-directory))
+; This grabs each .org file in the org-dir and adds it to the agenda view
+(mapc '(lambda (fl) (add-to-list 'org-agenda-files fl))
+      (directory-files my-org-dir t "\\.org"))
+; This sets the default notes file as my notes.org
+(setq org-default-notes-file (expand-file-name "notes.org" my-org-dir))
+#+END_SRC
+
+#+RESULTS:
+: /cygdrive/c/Users/Andrew/org/notes.org
+
+**** TODO Look into having sub-sections or files
+ I want to look at making major projects main sections in the todo.org file, or
+ maybe as their own .org files... I'm not sure the more effective way for me
+ yet...
+
+
+*** remember-mode
+Maybe I don't need remember mode anymore, because it can all be done with
+=org-capture=... I need to read up on this a bit more...
+#+BEGIN_SRC emacs-lisp :tangle no
+(require 'org-remember)
+(require 'remember)
+#+END_SRC
+
+*** =org-capture=
+    This is where I define my capture templates.
+
+- Journal: This is to make a journal entrance into my personal journal.  
+- Note: This is a general anything notes entry
+- Todo: This is a new task to insert into the tasks list
+- Appt: This is to put an appt into the calendar portion of the todo file
+- ?Project: This could be a way to insert a new project template
+#+BEGIN_SRC emacs-lisp
+(setq org-capture-templates
+  '(("j" "Journal" entry (file+datetree 
+        (expand-file-name "journal.org" my-org-dir))
+        "* %?\n%U\n %i\n")
+    ("n" "Note" entry (file+datetree
+        (expand-file-name "notes.org" my-org-dir))
+        "* %?\n %i\n %a")
+    ("t" "Todo" entry (file+headline 
+        (expand-file-name "todo.org" my-org-dir) "Tasks")
+        "* TODO %?\n %i\n %a")
+    ("a" "Appt" entry (file+headline
+        (expand-file-name "todo.org" my-org-dir) "Calendar")
+        "* APPT %?\n %^T\n %i\n %a")
+   )
+)                   
+
+#+END_SRC
+
+#+RESULTS:
+| j | Journal | entry | (file+datetree (expand-file-name journal.org my-org-dir))       | * %?\n%U\n %i\n           |
+| n | Note    | entry | (file+datetree (expand-file-name notes.org my-org-dir))         | * %?\n %i\n %a            |
+| t | Todo    | entry | (file+headline (expand-file-name todo.org my-org-dir) Tasks)    | * TODO %?\n %i\n %a       |
+| a | Appt    | entry | (file+headline (expand-file-name todo.org my-org-dir) Calendar) | * APPT %?\n %^T\n %i\n %a |
+
+*** TODO-states
+I want to try modeling my todo states in a system similar to that which Charles
+Cave uses in his [[http://members.optusnet.com.au/~charles57/GTD/gtd_workflow.html][system]].  He actually modeled his after John Wiegley's [[http://newartisans.com/2007/08/using-org-mode-as-a-day-planner/][ideas]].
+
+So, my TODOs will cycle around the following:
+| State     | Description                                     |
+|-----------+-------------------------------------------------|
+| TODO      | This is a task that needs to be done.           |
+| STARTED   | This is something that I'm currently working on |
+| WAITING   | This requires someone else's attention          |
+| APPT      | This is a scheduled task.                       |
+|-----------+-------------------------------------------------|
+| DONE      | This is finished                                |
+| CANCELLED | Decided not to do this                          |
+| DEFERRED  | Don't know when I'll get to this.               |
+|           |                                                 |
+
+This goes at the config portion of the org file...
+#+BEGIN_SRC emacs-lisp :tangle no
+#+SEQ_TODO: TODO(t) STARTED(s) WAITING(w) APPT(a) | DONE(d) CANCELLED(c) DEFERRED(f)
+#+END_SRC
+
+*** HabitRPG integration
+[[https://habitica.com][HabitRPG]] is a gamification/todo list organization tool.  
+#+BEGIN_SRC emacs-lisp :tangle no
+; In order to use this package, the following packages need to be installed..
+(use-package request)
+(use-package deferred)
+(use-package habitrpg 
+  :quelpa (habitrpg :fetcher github :repo "ryjm/habitrpg")
+  :init 
+  (setq habitrpg-api-user "ID-HERE")
+  (setq habitrpg-api-token "TOKEN-HERE"))
+#+END_SRC
+
+This hook is if you want a task marked DONE to be marked complete. It also adds a
+task to habitrpg.com when a todo state changes...
+#+BEGIN_SRC emacs-lisp :tangle no
+(add-hook 'org-after-todo-state-change-hook 'habitrpg-add 'append)
+#+END_SRC
+
+These are the keybindings...
+#+BEGIN_SRC emacs-lisp :tangle no
+(global-set-key (kbd "C-c C-x h") 'habitrpg-add)
+(global-set-key (kbd "<f9> a") 'habitrpg-status)
+#+END_SRC
+
+From [[https://github.com/ryjm/habitrpg.el][the habitrpg git repo]], use the =<f9> a= to pull up the habitrpg buffer and
+then do =C-h m= to see all the key bindings..
+** Multiple Cursors
+
+Install/update the =multiple-cursors= code.
+#+BEGIN_SRC emacs-lisp
+(quelpa 'multiple-cursors)
+#+END_SRC
+
+*** Keybindings
+
+#+BEGIN_SRC emacs-lisp
+;; Customize key bindings for multiple cursors mode
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+(global-set-key (kbd "C-c C->") 'mc/mark-more-like-this-extended)
+(global-set-key (kbd "C-c SPC") 'set-rectangular-region-anchor)
+(global-set-key (kbd "C-c C-SPC") (lambda () (interactive) (mc/create-fake-cursor-at-point)))
+(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+(global-set-key (kbd "C-S-c C-<") 'mc/mark-all-in-region)
+;(global-set-key (kbd "C-S-c C->") 'mc/mark-all-regexp-in-region)
+(global-set-key (kbd "<f7>") 'multiple-cursors-mode)
+#+END_SRC
+
+*** Keybindings in TTY
+
+#+BEGIN_SRC emacs-lisp
+;; Keybindings for multiple cursors mode in TTY
+(global-set-key (kbd "M-[ 1 ; 6 n") 'mc/mark-next-like-this)
+(global-set-key (kbd "M-[ 1 ; 6 l") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c M-[ 1 ; 6 l") 'mc/mark-all-like-this)
+(global-set-key (kbd "C-c M-[ 1 ; 6 n") 'mc/mark-more-like-this-extended)
+#+END_SRC
+
+*** Phi-search interoperability
+
+#+BEGIN_SRC emacs-lisp :tangle no
+;; Add extended interoperability between phi-search and multiple cursors
+;; (source: https://github.com/knu/phi-search-mc.el.git)
+(quelpa 'phi-search-mc)
+(require 'phi-search-mc)
+(phi-search-mc/setup-keys)
+#+END_SRC
+
+** 

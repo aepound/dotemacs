@@ -1,0 +1,11 @@
+# Directories:
+backups
+elpa
+personal
+quelpa
+auto-save-list
+
+# Particular files:
+bookmarks
+identity.org
+*.el
