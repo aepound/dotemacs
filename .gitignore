@@ -6,6 +6,7 @@ quelpa
 auto-save-list
 
 # Particular files:
+saveplace
 bookmarks
 identity.org
 *.el

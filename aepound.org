@@ -229,7 +229,11 @@ mind about the menu - I want that again.)
 #+END_SRC
 * Emacs Package configurations
 ** Matlab config
-
+*** TODO Check whether =cvs= is installed
+And if it isn't, then we need to maybe get this from my git clone of the cvs
+repo? 
+**** Look into using my repo as an alternative to the official on.
+[[https://github.com/aepound/matlab-emacs][my matlab-emacs repo]]
 #+BEGIN_SRC emacs-lisp
 (quelpa 'matlab-mode) 
 (add-to-list 'load-path "~/.emacs.d/quelpa/build/matlab-mode")
@@ -426,6 +430,7 @@ agenda, etc...
 | journal.org      | Journal/writings                                   |
 | notes.org        | Everything I want to remember for some other time. |
 
+**** TODO If the directory doesn't exist, What is to be done?
 #+BEGIN_SRC emacs-lisp
 ; This sets my-org-dir as "~/org/" (because user-emacs-directory = "~/.emacs.d/")
 (setq my-org-dir (expand-file-name "../org/" user-emacs-directory))
