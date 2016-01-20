@@ -430,7 +430,6 @@ agenda, etc...
 | journal.org      | Journal/writings                                   |
 | notes.org        | Everything I want to remember for some other time. |
 
-**** TODO If the directory doesn't exist, What is to be done?
 #+BEGIN_SRC emacs-lisp
 ; This sets my-org-dir as "~/org/" (because user-emacs-directory = "~/.emacs.d/")
 (setq my-org-dir (expand-file-name "../org/" user-emacs-directory))
@@ -443,6 +442,8 @@ agenda, etc...
 
 #+RESULTS:
 : /cygdrive/c/Users/Andrew/org/notes.org
+**** TODO If the directory doesn't exist, What is to be done? 
+I need to put some error control in this a bit...
 
 **** TODO Look into having sub-sections or files
  I want to look at making major projects main sections in the todo.org file, or
@@ -450,12 +451,40 @@ agenda, etc...
  yet...
 
 
-*** remember-mode
+*** DEFERRED remember-mode
 Maybe I don't need remember mode anymore, because it can all be done with
 =org-capture=... I need to read up on this a bit more...
 #+BEGIN_SRC emacs-lisp :tangle no
 (require 'org-remember)
 (require 'remember)
+#+END_SRC
+
+*** flyspell mode
+A spell check that is LaTeX-friendly. (I scraped this from this [[http://www.clarkdonley.com/blog/2014-10-26-org-mode-and-writing-papers-some-tips.html][blog post]].)
+#+BEGIN_SRC emacs-lisp :tangle no
+;; 1. hook flyspell into org-mode
+(add-hook 'org-mode-hook 'flyspell-mode)
+(add-hook 'org-mode-hook 'flyspell-buffer)
+
+
+;; 2. ignore message flags
+(setq flyspell-issue-message-flag nil)
+
+
+;; 3. ignore tex commands
+(add-hoo 'org-mode-hook (lambda () (setq ispell-parser 'tex)))
+(defun flyspell-ignore-tex ()
+  (interactive)
+  (set (make-variable-buffer-local 'ispell-parser) 'tex))
+(add-hook 'org-mode-hook 'flyspell-ignore-tex)
+#+END_SRC
+
+*** CDLaTeX
+This "is a minor mode that is normally used in combination with a major LaTeX mode
+like AUCTeX in order to speed-up insertion of environments and math templates"
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(add-hook 'org-mode-hook 'turn-on-org-cdlatex)
 #+END_SRC
 
 *** =org-capture=
@@ -583,4 +612,4 @@ Install/update the =multiple-cursors= code.
 (phi-search-mc/setup-keys)
 #+END_SRC
 
-** 
+
