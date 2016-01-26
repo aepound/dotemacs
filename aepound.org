@@ -612,4 +612,6 @@ Install/update the =multiple-cursors= code.
 (phi-search-mc/setup-keys)
 #+END_SRC
 
+** write-good mode
+[[https://github.com/bnbeckwith/writegood-mode][write-good mode]] This is a package to help improve writing skills.
 
